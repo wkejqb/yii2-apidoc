@@ -7,10 +7,12 @@
 
 namespace yii\apidoc\models;
 
-use phpDocumentor\Reflection\DocBlock\Tag\ParamTag;
-use phpDocumentor\Reflection\DocBlock\Tag\PropertyTag;
-use phpDocumentor\Reflection\DocBlock\Tag\ReturnTag;
-use phpDocumentor\Reflection\DocBlock\Tag\ThrowsTag;
+
+use phpDocumentor\Reflection\DocBlock\Tags\Param;
+use phpDocumentor\Reflection\DocBlock\Tags\Property;
+use phpDocumentor\Reflection\DocBlock\Tags\Return_;
+use phpDocumentor\Reflection\DocBlock\Tags\Throws;
+use phpDocumentor\Reflection\Php\Function_;
 
 /**
  * Represents API documentation information for a `function`.
@@ -32,7 +34,7 @@ class FunctionDoc extends BaseDoc
 
 
     /**
-     * @param \phpDocumentor\Reflection\FunctionReflector $reflector
+     * @param Function_ $reflector
      * @param Context $context
      * @param array $config
      */
@@ -44,7 +46,7 @@ class FunctionDoc extends BaseDoc
             return;
         }
 
-        $this->isReturnByReference = $reflector->isByRef();
+        //$this->isReturnByReference = $reflector->isByRef();
 
         foreach ($reflector->getArguments() as $arg) {
             $arg = new ParamDoc($arg, $context, ['sourceFile' => $this->sourceFile]);
@@ -52,12 +54,10 @@ class FunctionDoc extends BaseDoc
         }
 
         foreach ($this->tags as $i => $tag) {
-            if ($tag instanceof ThrowsTag) {
-                $this->exceptions[$tag->getType()] = $tag->getDescription();
+            if ($tag instanceof Throws) {
+                $this->exceptions[(string) $tag->getType()] = $tag->getDescription();
                 unset($this->tags[$i]);
-            } elseif ($tag instanceof PropertyTag) {
-                // ignore property tag
-            } elseif ($tag instanceof ParamTag) {
+            } elseif ($tag instanceof Param) {
                 $paramName = $tag->getVariableName();
                 if (!isset($this->params[$paramName]) && $context !== null) {
                     $context->errors[] = [
@@ -71,9 +71,9 @@ class FunctionDoc extends BaseDoc
                 $this->params[$paramName]->type = $tag->getType();
                 $this->params[$paramName]->types = $tag->getTypes();
                 unset($this->tags[$i]);
-            } elseif ($tag instanceof ReturnTag) {
+            } elseif ($tag instanceof Return_) {
                 $this->returnType = $tag->getType();
-                $this->returnTypes = $tag->getTypes();
+                //$this->returnTypes = $tag->getTypes();
                 $this->return = static::mbUcFirst($tag->getDescription());
                 unset($this->tags[$i]);
             }

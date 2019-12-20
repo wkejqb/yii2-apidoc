@@ -7,6 +7,8 @@
 
 namespace yii\apidoc\models;
 
+use phpDocumentor\Reflection\Php\Interface_;
+
 /**
  * Represents API documentation information for an `interface`.
  *
@@ -21,7 +23,7 @@ class InterfaceDoc extends TypeDoc
 
 
     /**
-     * @param \phpDocumentor\Reflection\InterfaceReflector $reflector
+     * @param Interface_ $reflector
      * @param Context $context
      * @param array $config
      */
@@ -33,7 +35,7 @@ class InterfaceDoc extends TypeDoc
             return;
         }
 
-        foreach ($reflector->getParentInterfaces() as $interface) {
+        foreach ($reflector->getParents() as $interface) {
             $this->parentInterfaces[] = ltrim($interface, '\\');
         }
 

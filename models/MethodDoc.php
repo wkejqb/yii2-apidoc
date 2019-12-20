@@ -7,6 +7,8 @@
 
 namespace yii\apidoc\models;
 
+use phpDocumentor\Reflection\Element;
+
 /**
  * Represents API documentation information for a `method`.
  *
@@ -24,7 +26,7 @@ class MethodDoc extends FunctionDoc
 
 
     /**
-     * @param \phpDocumentor\Reflection\ClassReflector\MethodReflector $reflector
+     * @param Element $reflector
      * @param Context $context
      * @param array $config
      */

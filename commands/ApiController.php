@@ -103,7 +103,8 @@ class ApiController extends BaseController
         $this->stdout('done.' . PHP_EOL, Console::FG_GREEN);
 
         // save processed data to cache
-        $this->storeContext($context, $targetDir);
+        // TODO: not supported serialization
+        //$this->storeContext($context, $targetDir);
 
         $this->updateContext($context);
 

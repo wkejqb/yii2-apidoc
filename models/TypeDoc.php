@@ -7,7 +7,10 @@
 
 namespace yii\apidoc\models;
 
-use phpDocumentor\Reflection\DocBlock\Tag\AuthorTag;
+use phpDocumentor\Reflection\DocBlock\Tags\Author;
+use phpDocumentor\Reflection\Element;
+use phpDocumentor\Reflection\Php\Method;
+use phpDocumentor\Reflection\Php\Property;
 use yii\helpers\StringHelper;
 
 /**
@@ -173,7 +176,7 @@ class TypeDoc extends BaseDoc
     }
 
     /**
-     * @param \phpDocumentor\Reflection\InterfaceReflector $reflector
+     * @param Element $reflector
      * @param Context $context
      * @param array $config
      */
@@ -188,13 +191,14 @@ class TypeDoc extends BaseDoc
         }
 
         foreach ($this->tags as $i => $tag) {
-            if ($tag instanceof AuthorTag) {
-                $this->authors[$tag->getAuthorName()] = $tag->getAuthorEmail();
+            if ($tag instanceof Author) {
+                $this->authors[$tag->getAuthorName()] = $tag->getEmail();
                 unset($this->tags[$i]);
             }
         }
 
         foreach ($reflector->getProperties() as $propertyReflector) {
+            /** @var Property $propertyReflector */
             if ($propertyReflector->getVisibility() != 'private') {
                 $property = new PropertyDoc($propertyReflector, $context, ['sourceFile' => $this->sourceFile]);
                 $property->definedBy = $this->name;
@@ -203,6 +207,7 @@ class TypeDoc extends BaseDoc
         }
 
         foreach ($reflector->getMethods() as $methodReflector) {
+            /** @var Method $methodReflector */
             if ($methodReflector->getVisibility() != 'private') {
                 $method = new MethodDoc($methodReflector, $context, ['sourceFile' => $this->sourceFile]);
                 $method->definedBy = $this->name;

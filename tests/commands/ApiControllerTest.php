@@ -7,6 +7,7 @@
 
 namespace yiiunit\apidoc\commands;
 
+use Throwable;
 use Yii;
 use yiiunit\apidoc\support\controllers\ApiControllerMock;
 use yiiunit\apidoc\TestCase;
@@ -42,6 +43,7 @@ class ApiControllerTest extends TestCase
      * @param string $targetDir
      * @param array $args
      * @return string command output
+     * @throws Throwable
      */
     protected function generateApi($sourceDirs, $targetDir = '@runtime', array $args = [])
     {
@@ -72,7 +74,7 @@ class ApiControllerTest extends TestCase
         $animalFile = $outputPath . DIRECTORY_SEPARATOR . 'yiiunit-apidoc-data-api-animal-animal.html';
         $this->assertTrue(file_exists($animalFile));
         $animalContent = file_get_contents($animalFile);
-        $this->assertContains('<h1>Abstract Class yiiunit\apidoc\data\api\animal\Animal</h1>', $animalContent);
+        $this->assertContains('<h1>Abstract Class Animal</h1>', $animalContent);
         $this->assertContains('<th>Available since version</th><td>1.0</td>', $animalContent);
         $this->assertContains('Animal is a base class for animals.', $animalContent);
         $this->assertContainsWithoutIndent(
@@ -102,7 +104,7 @@ HTML
 <tr id="getAge()">
 <td><a href="yiiunit-apidoc-data-api-animal-animal.html#getAge()-detail">getAge()</a></td>
 <td>Returns animal age in seconds.</td>
-<td><a href="yiiunit-apidoc-data-api-animal-animal.html">yiiunit\apidoc\data\api\animal\Animal</a></td>
+<td><a href="yiiunit-apidoc-data-api-animal-animal.html">Animal</a></td>
 </tr>
 HTML
             , $animalContent
@@ -112,12 +114,11 @@ HTML
 <tr id="render()">
     <td><a href="yiiunit-apidoc-data-api-animal-animal.html#render()-detail">render()</a></td>
     <td>Renders animal description.</td>
-    <td><a href="yiiunit-apidoc-data-api-animal-animal.html">yiiunit\apidoc\data\api\animal\Animal</a></td>
+    <td><a href="yiiunit-apidoc-data-api-animal-animal.html">Animal</a></td>
 </tr>
 HTML
             , $animalContent
         );
-        //$this->assertContains('$age', $animalContent);
 
         // Class `Dog` :
         $dogFile = $outputPath . DIRECTORY_SEPARATOR . 'yiiunit-apidoc-data-api-animal-dog.html';

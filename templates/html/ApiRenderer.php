@@ -7,7 +7,9 @@
 
 namespace yii\apidoc\templates\html;
 
+use phpDocumentor\Reflection\Php\Class_;
 use yii\apidoc\helpers\ApiMarkdown;
+use yii\apidoc\models\InterfaceDoc;
 use yii\apidoc\models\MethodDoc;
 use yii\apidoc\models\PropertyDoc;
 use yii\apidoc\models\ClassDoc;
@@ -105,12 +107,13 @@ class ApiRenderer extends BaseApiRenderer implements ViewContextInterface
         }
         $done = 0;
         foreach ($types as $type) {
+            /** @var ClassDoc|InterfaceDoc $type */
             $fileContent = $this->renderWithLayout($this->typeView, [
                 'type' => $type,
                 'apiContext' => $context,
                 'types' => $types,
             ]);
-            file_put_contents($targetDir . '/' . $this->generateFileName($type->name), $fileContent);
+            file_put_contents($targetDir . '/' . $this->generateFileName($type->fqsen), $fileContent);
 
             if ($this->controller !== null) {
                 Console::updateProgress(++$done, $typeCount);

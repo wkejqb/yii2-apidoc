@@ -7,7 +7,12 @@
 
 namespace yii\apidoc\models;
 
-use phpDocumentor\Reflection\FileReflector;
+use phpDocumentor\Reflection\Exception;
+use phpDocumentor\Reflection\File\LocalFile;
+use phpDocumentor\Reflection\Php\Class_;
+use phpDocumentor\Reflection\Php\Interface_;
+use phpDocumentor\Reflection\Php\Project;
+use phpDocumentor\Reflection\Php\ProjectFactory;
 use yii\base\Component;
 
 /**
@@ -43,6 +48,14 @@ class Context extends Component
      */
     public $warnings = [];
 
+    /** @var ProjectFactory */
+    private $projectFactory;
+
+    public function __construct($config = [])
+    {
+        parent::__construct($config);
+        $this->projectFactory = ProjectFactory::createInstance();
+    }
 
     /**
      * Returning TypeDoc for a type given
@@ -66,17 +79,21 @@ class Context extends Component
     /**
      * Adds file to context
      * @param string $fileName
+     * @throws Exception
      */
     public function addFile($fileName)
     {
         $this->files[$fileName] = sha1_file($fileName);
 
-        $reflection = new FileReflector($fileName, true);
-        $reflection->process();
+        $projectFiles = [new LocalFile($fileName)];
+        /** @var Project $project */
+        $project = $this->projectFactory->create('My Project', $projectFiles);
+        $files = $project->getFiles();
+        $reflection = $files[$fileName];
 
         foreach ($reflection->getClasses() as $class) {
             $class = new ClassDoc($class, $this, ['sourceFile' => $fileName]);
-            $this->classes[$class->name] = $class;
+            $this->classes[$class->fqsen] = $class;
         }
         foreach ($reflection->getInterfaces() as $interface) {
             $interface = new InterfaceDoc($interface, $this, ['sourceFile' => $fileName]);
@@ -95,7 +112,7 @@ class Context extends Component
     {
         // update all subclass references
         foreach ($this->classes as $class) {
-            $className = $class->name;
+            $className = $class->fqsen;
             while (isset($this->classes[$class->parentClass])) {
                 $class = $this->classes[$class->parentClass];
                 $class->subclasses[] = $className;
@@ -256,7 +273,7 @@ class Context extends Component
                 // descriptions will be concatenated.
                 $m->description = trim($m->description) . "\n\n"
                     . trim($inheritedMethod->description) . "\n\n"
-                    . $inheritTag->getContent();
+                    . $inheritTag->getDescription();
 
                 foreach ($m->params as $i => $param) {
                     if (!isset($inheritedMethod->params[$i])) {
@@ -296,12 +313,14 @@ class Context extends Component
 
         $methods = [];
         foreach($inheritanceCandidates as $candidate) {
-            if (isset($candidate->methods[$method->name])) {
-                $cmethod = $candidate->methods[$method->name];
-                if ($cmethod->hasTag('inheritdoc')) {
-                    $this->inheritDocs($candidate);
+            /** @var ClassDoc $candidate */
+            foreach ($candidate->methods as $curMethod) {
+                if ($method->name == $curMethod->name) {
+                    if ($curMethod->hasTag('inheritdoc')) {
+                        $this->inheritDocs($candidate);
+                    }
+                    $methods[] = $curMethod;
                 }
-                $methods[] = $cmethod;
             }
         }
 
@@ -309,11 +328,11 @@ class Context extends Component
     }
 
     /**
-     * @param PropertyDoc $method
+     * @param PropertyDoc $prop
      * @param ClassDoc $class
      * @return mixed
      */
-    private function inheritPropertyRecursive($method, $class)
+    private function inheritPropertyRecursive($prop, $class)
     {
         $inheritanceCandidates = array_merge(
             $this->getParents($class),
@@ -322,12 +341,14 @@ class Context extends Component
 
         $properties = [];
         foreach($inheritanceCandidates as $candidate) {
-            if (isset($candidate->properties[$method->name])) {
-                $cproperty = $candidate->properties[$method->name];
-                if ($cproperty->hasTag('inheritdoc')) {
-                    $this->inheritDocs($candidate);
+            /** @var ClassDoc $candidate */
+            foreach ($candidate->properties as $property) {
+                if ($prop->name == $property->name) {
+                    if ($property->hasTag('inheritdoc')) {
+                        $this->inheritDocs($candidate);
+                    }
+                    $properties[] = $property;
                 }
-                $properties[] = $cproperty;
             }
         }
 

@@ -7,6 +7,8 @@
 
 namespace yii\apidoc\models;
 
+use phpDocumentor\Reflection\Php\Class_;
+
 /**
  * Represents API documentation information for a `class`.
  *
@@ -91,7 +93,9 @@ class ClassDoc extends TypeDoc
     }
 
     /**
-     * @inheritdoc
+     * @param Class_ $reflector
+     * @param null $context
+     * @param array $config
      */
     public function __construct($reflector = null, $context = null, $config = [])
     {
@@ -101,7 +105,8 @@ class ClassDoc extends TypeDoc
             return;
         }
 
-        $this->parentClass = ltrim($reflector->getParentClass(), '\\');
+        $this->parentClass = ltrim($reflector->getParent(), '\\');
+        $this->fqsen = ltrim((string) $reflector->getFqsen(), '\\');
         if (empty($this->parentClass)) {
             $this->parentClass = null;
         }
@@ -111,7 +116,7 @@ class ClassDoc extends TypeDoc
         foreach ($reflector->getInterfaces() as $interface) {
             $this->interfaces[] = ltrim($interface, '\\');
         }
-        foreach ($reflector->getTraits() as $trait) {
+        foreach ($reflector->getUsedTraits() as $trait) {
             $this->traits[] = ltrim($trait, '\\');
         }
         foreach ($reflector->getConstants() as $constantReflector) {
